@@ -27,13 +27,30 @@ try {
 // create a reservation
 app.post("/api/reservation", async (req: any, res: any) => {
   try {
-    const { room_id } = req.body;
-    const query =
-      "INSERT INTO reservations (room_id, is_checked, is_pass) VALUES ($1, $2, $3)";
-    const values = [room_id, false, false];
-    const result = await client.query(query, values);
 
-    res.status(201).json(result.rows[0]);
+    // check if the room is already reserved or already checked
+    const { room_id } = req.body;
+    const check_query = "SELECT * FROM reservations WHERE room_id = $1 ORDER BY create_at DESC LIMIT 1";
+    const check_values = [room_id];
+    const check_result = await client.query(check_query, check_values);
+    if(check_result.rows.length > 0 && (check_result.rows[0].is_pass === true || check_result.rows[0].is_checked === false)) {
+        let error_message = "";
+        if(check_result.rows[0].is_checked === false) {
+            error_message = "此床號已被登記，請等待檢查。"
+        } else if(check_result.rows[0].is_pass === true) {
+            error_message = "此床號已通過檢查，無須再次檢查。"
+        }
+        res.status(400).json({ error: error_message });
+        return;
+    }
+
+    // create a reservation
+    const insert_query =
+      "INSERT INTO reservations (room_id, is_checked, is_pass) VALUES ($1, $2, $3)";
+    const insert_values = [room_id, false, false];
+    const insert_result = await client.query(insert_query, insert_values);
+
+    res.status(201).json(insert_result.rows[0]);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

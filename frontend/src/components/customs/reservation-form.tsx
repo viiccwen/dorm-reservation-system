@@ -39,7 +39,6 @@ const ReservationForm = () => {
     useForm<ReservationFormInputs>({
       resolver: zodResolver(ReservationFormSchema),
     });
-  const router = useRouter();
 
   const [floor, setFloor] = useState("");
   const [room, setRoom] = useState("");
@@ -71,7 +70,8 @@ const ReservationForm = () => {
         window.location.reload();
       }, 1000);
     } else {
-      toast.error("預約失敗");
+      const error_message = response.json().then((data) => data.error);
+      toast.error(error_message);
     }
   };
 
