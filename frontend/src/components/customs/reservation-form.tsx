@@ -35,7 +35,7 @@ const ReservationFormSchema = z.object({
 type ReservationFormInputs = z.infer<typeof ReservationFormSchema>;
 
 const ReservationForm = () => {
-  const { handleSubmit, setValue, reset, watch } =
+  const { handleSubmit, setValue } =
     useForm<ReservationFormInputs>({
       resolver: zodResolver(ReservationFormSchema),
     });

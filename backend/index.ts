@@ -2,6 +2,8 @@ const express = require("express");
 const pg = require("pg");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 app.use(cors());
@@ -15,6 +17,7 @@ const client = new Client({
   password: process.env["DB_PASSWORD"],
   database: process.env["DB_NAME"],
 });
+const hashedPassword = bcrypt.hashSync(process.env["TEMP_ADMIN_PASSWORD"], 10);
 
 try {
   client.connect().then(() => {
@@ -22,6 +25,25 @@ try {
   });
 } catch (error) {
   console.error(`Error connecting to the database: ${error}`);
+}
+
+const AuthentaicateToken = (req: any, res: any, next: any) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (token == null) return res.sendStatus(401);
+
+  jwt.verify(token, process.env['JWT_SECRET'], (err: any, user: any) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+};
+
+const FormateTime = (time: string) => {
+  const date = new Date(time);
+  console.log(date.toISOString().replace('T', ' ').split('.')[0]);
+  return date.toISOString().replace('T', ' ').split('.')[0];
 }
 
 // create a reservation
@@ -61,15 +83,20 @@ app.get("/api/query-all-reservations", async (req: any, res: any) => {
   try {
     const query = "SELECT * FROM reservations ORDER BY create_at DESC";
     const result = await client.query(query);
-    console.log(result.rows);
-    res.status(200).json(result.rows);
+    
+    const formatted_result = result.rows.map((row: any) => ({
+      ...row,
+      create_at: FormateTime(row.create_at)
+    }));
+    
+    res.status(200).json(formatted_result);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 });
 
 // update a reservation
-app.post("/api/update-reservation", async (req: any, res: any) => {
+app.post("/api/update-reservation", AuthentaicateToken, async (req: any, res: any) => {
   try {
     const { id, is_checked, is_pass, check_person } = req.body;
     const query =
@@ -82,6 +109,31 @@ app.post("/api/update-reservation", async (req: any, res: any) => {
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
+});
+
+// login
+app.post("/api/login", async (req: any, res: any) => {
+  try {
+    const { password } = req.body;
+   
+    const isMatch = bcrypt.compareSync(password, hashedPassword);
+
+    /*
+    const query = "SELECT * FROM users WHERE password = $1 LIMIT 1";
+    const values = [password];
+    const result = await client.query(query, values);
+    */
+
+    if (isMatch) {
+      const token = jwt.sign({ role: "admin" }, process.env["JWT_SECRET"], { expiresIn: "1h" });
+      res.status(200).json({ name: "vic", token });
+    } else {
+      res.status(401).json({ error: "密碼錯誤" });
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+
 });
 
 app.listen(process.env["API_PORT"], () => {

@@ -1,16 +1,9 @@
 "use client";
 import { CircleCheck, CircleX, Hourglass } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useTheme } from "next-themes";
-import { Button } from "../ui/button";
-import FailButton from "./fail-button";
-import PassButton from "./pass-button";
+import FailButton from "@/components/customs/fail-button";
+import PassButton from "@/components/customs/pass-button";
 
 type reservationListsType = {
   id: number;
@@ -21,11 +14,17 @@ type reservationListsType = {
   check_person?: string;
 };
 
+interface ReservationListsProps {
+  res_lists: reservationListsType[];
+  user: string | null;
+  token: string | null;
+}
+
 const ReservationLists = ({
   res_lists,
-}: {
-  res_lists: reservationListsType[];
-}) => {
+  user,
+  token,
+}: ReservationListsProps) => {
   const { theme } = useTheme();
   const check_person = "vic";
 
@@ -67,8 +66,12 @@ const ReservationLists = ({
               </div>
               {/*TODO: add-on authentication, only allow admin to control */}
               <div className="flex items-center justify-end mr-5 gap-2">
-                <FailButton id={res.id} check_person={check_person} />
-                <PassButton id={res.id} check_person={check_person} />
+                {user !== null && token ? (
+                  <>
+                    <FailButton id={res.id} check_person={check_person} token={token} />
+                    <PassButton id={res.id} check_person={check_person} token={token} />
+                  </>
+                ) : null}
               </div>
             </div>
           ))}

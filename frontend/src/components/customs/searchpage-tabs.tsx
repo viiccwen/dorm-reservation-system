@@ -1,9 +1,12 @@
 "use client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ReservationForm from "./reservation-form";
-import ReservationRules from "./reservation-rules";
-import ReservationLists from "./reservation-lists";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense, lazy } from "react";
+import ReservationSuspense from "@/components/customs/suspense/reservation-suspense";
+import { getToken, getUser } from "@/lib/auth";
+
+const ReservationLists = lazy(
+  () => import("@/components/customs/reservation-lists")
+);
 
 const default_value = "all";
 
@@ -29,10 +32,10 @@ const tab_items = [
 type reservationListsType = {
   id: number;
   room_id: string;
-  create_at: string;
   is_checked: boolean;
   is_pass: boolean;
   check_person: string;
+  create_at: string;
 };
 
 const SearchpageTabs = () => {
@@ -40,6 +43,8 @@ const SearchpageTabs = () => {
   const [waiting_data, setWaitingData] = useState<reservationListsType[]>([]);
   const [pass_data, setPassData] = useState<reservationListsType[]>([]);
   const [fail_data, setFailData] = useState<reservationListsType[]>([]);
+  const [user, setUser] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   const GetReservationLists = async () => {
     const response = await fetch(
@@ -62,6 +67,9 @@ const SearchpageTabs = () => {
   };
 
   useEffect(() => {
+    setUser(getUser());
+    setToken(getToken());
+
     GetReservationLists()
       .then((lists) => setAllData(lists))
       .catch((error) => console.error(error));
@@ -73,11 +81,15 @@ const SearchpageTabs = () => {
     setWaitingData(waiting_lists);
 
     // pass_data
-    const pass_lists = all_data.filter((item) => item.is_checked === true && item.is_pass === true);
+    const pass_lists = all_data.filter(
+      (item) => item.is_checked === true && item.is_pass === true
+    );
     setPassData(pass_lists);
 
     // fail_data
-    const fail_lists = all_data.filter((item) => item.is_checked === true && item.is_pass === false);
+    const fail_lists = all_data.filter(
+      (item) => item.is_checked === true && item.is_pass === false
+    );
     setFailData(fail_lists);
   }, [all_data]);
 
@@ -93,16 +105,24 @@ const SearchpageTabs = () => {
         </TabsList>
 
         <TabsContent value="all">
-          <ReservationLists res_lists={all_data} />
+          <Suspense fallback={<ReservationSuspense />}>
+            <ReservationLists res_lists={all_data} user={user} token={token} />
+          </Suspense>
         </TabsContent>
         <TabsContent value="waiting">
-          <ReservationLists res_lists={waiting_data} />
+          <Suspense fallback={<ReservationSuspense />}>
+            <ReservationLists res_lists={waiting_data} user={user} token={token}/>
+          </Suspense>
         </TabsContent>
         <TabsContent value="pass">
-          <ReservationLists res_lists={pass_data} />
+          <Suspense fallback={<ReservationSuspense />}>
+            <ReservationLists res_lists={pass_data} user={user} token={token}/>
+          </Suspense>
         </TabsContent>
         <TabsContent value="fail">
-          <ReservationLists res_lists={fail_data} />
+          <Suspense fallback={<ReservationSuspense />}>
+            <ReservationLists res_lists={fail_data} user={user} token={token}/>
+          </Suspense>
         </TabsContent>
       </Tabs>
     </>

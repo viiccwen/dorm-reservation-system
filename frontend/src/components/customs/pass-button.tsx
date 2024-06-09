@@ -6,9 +6,10 @@ import { Button } from "../ui/button";
 interface PassButtonProps {
   id: number;
   check_person: string;
+  token: string;
 }
 
-const PassButton = ({ id, check_person }: PassButtonProps) => {
+const PassButton = ({ id, check_person, token }: PassButtonProps) => {
 
   const HandleClick = async () => {
     const response = await fetch(
@@ -17,6 +18,7 @@ const PassButton = ({ id, check_person }: PassButtonProps) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
           id: id,
@@ -29,7 +31,9 @@ const PassButton = ({ id, check_person }: PassButtonProps) => {
 
     if (response.ok) {
       toast.success("已送出檢查結果：合格");
-      window.location.reload();
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } else {
       toast.error("送出檢查結果失敗");
     }
