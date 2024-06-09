@@ -23,6 +23,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const ReservationFormSchema = z.object({
   floor: z.string(),
@@ -33,9 +35,11 @@ const ReservationFormSchema = z.object({
 type ReservationFormInputs = z.infer<typeof ReservationFormSchema>;
 
 const ReservationForm = () => {
-  const { handleSubmit, setValue } = useForm<ReservationFormInputs>({
-    resolver: zodResolver(ReservationFormSchema),
-  });
+  const { handleSubmit, setValue, reset, watch } =
+    useForm<ReservationFormInputs>({
+      resolver: zodResolver(ReservationFormSchema),
+    });
+  const router = useRouter();
 
   const [floor, setFloor] = useState("");
   const [room, setRoom] = useState("");
@@ -46,8 +50,34 @@ const ReservationForm = () => {
   const RoomNumber = Array.from({ length: 15 }, (_, i) => i + 1);
   const FloorNumber = Array.from({ length: 13 }, (_, i) => i + 2);
 
-  const onSubmit: SubmitHandler<ReservationFormInputs> = (data) => {
-    console.log(data);
+  const onSubmit: SubmitHandler<ReservationFormInputs> = async (data) => {
+    const { floor, room, bed } = data;
+    const room_id = `${floor}${room.padStart(2, "0")}-${bed}`;
+
+    {
+      /* HOTFIX: can't reset UI select display */
+    }
+    setFloor("");
+    setRoom("");
+    setBed("");
+    reset();
+
+    const response = await fetch(
+      process.env.NEXT_PUBLIC_API_URL + "reservation",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ room_id: room_id }),
+      }
+    );
+
+    if (response.ok) {
+      toast.success("預約成功");
+    } else {
+      toast.error("預約失敗");
+    }
   };
 
   const handleFloorChange = (value: string) => {
@@ -134,7 +164,12 @@ const ReservationForm = () => {
             </div>
           </CardContent>
           <CardFooter className="justify-center">
-            <Button type="submit" disabled={floor && bed && room ? false : true}>預約</Button>
+            <Button
+              type="submit"
+              disabled={floor && bed && room ? false : true}
+            >
+              預約
+            </Button>
           </CardFooter>
         </form>
       </Card>

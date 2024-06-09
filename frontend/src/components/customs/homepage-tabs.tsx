@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReservationForm from "./reservation-form";
 import ReservationRules from "./reservation-rules";
 
-const default_value = "res-form";
+const default_value = "rules";
 
 const tab_items = [
   {
