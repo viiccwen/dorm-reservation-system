@@ -54,14 +54,6 @@ const ReservationForm = () => {
     const { floor, room, bed } = data;
     const room_id = `${floor}${room.padStart(2, "0")}-${bed}`;
 
-    {
-      /* HOTFIX: can't reset UI select display */
-    }
-    setFloor("");
-    setRoom("");
-    setBed("");
-    reset();
-
     const response = await fetch(
       process.env.NEXT_PUBLIC_API_URL + "reservation",
       {
@@ -75,6 +67,9 @@ const ReservationForm = () => {
 
     if (response.ok) {
       toast.success("預約成功");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } else {
       toast.error("預約失敗");
     }
