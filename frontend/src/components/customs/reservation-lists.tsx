@@ -37,7 +37,7 @@ const ReservationLists = ({
               key={index}
               className="grid grid-cols-3 p-[10px] m-[20px] border-2 drop-shadow-md border-neutral-300 rounded-md"
             >
-              <div className="flex items-center text-2xl font-bold gap-1">
+              <div className="flex items-center text-2xl font-bold gap-1 ml-4">
                 {!res.is_checked ? (
                   <Hourglass
                     color={theme === "light" ? "#1C3144" : "#F1FAEE"}
@@ -64,7 +64,7 @@ const ReservationLists = ({
                   檢查人員：{res.check_person ? res.check_person : "尚未檢查"}
                 </div>
               </div>
-              {/*TODO: add-on authentication, only allow admin to control */}
+
               <div className="flex items-center justify-end mr-5 gap-2">
                 {user !== null && token ? (
                   <>

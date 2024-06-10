@@ -1,12 +1,16 @@
 "use client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState, useEffect, Suspense, lazy } from "react";
+import ReservationLists from "@/components/customs/reservation-lists";
 import ReservationSuspense from "@/components/customs/suspense/reservation-suspense";
+import { useState, useEffect, Suspense, lazy } from "react";
+
 import { getToken, getUser } from "@/lib/auth";
 
+/*
 const ReservationLists = lazy(
-  () => import("@/components/customs/reservation-lists")
+  () => import()
 );
+*/
 
 const default_value = "all";
 

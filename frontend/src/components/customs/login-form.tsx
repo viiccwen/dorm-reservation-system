@@ -13,6 +13,7 @@ import { setToken, setUser } from "@/lib/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const LoginFormSchema = z.object({
@@ -46,7 +47,7 @@ const LoginForm = () => {
       setToken(result.token);
       router.push("/search");
     } else {
-      /* TODO: wrong password */
+      toast.error("密碼錯誤");
     }
   };
 
