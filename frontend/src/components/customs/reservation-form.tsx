@@ -86,6 +86,8 @@ const ReservationForm = () => {
 
     if (value === "15") {
       setBedNumber(Array.from({ length: 4 }, (_, i) => i + 1));
+    } else {
+      setBedNumber(Array.from({ length: 6 }, (_, i) => i + 1));
     }
   };
 
